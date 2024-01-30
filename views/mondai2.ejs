@@ -226,7 +226,8 @@
           minutes:minute,
           seconds:totalSeconds
         }
-        socket.emit('mondai_btnclick',question_data);
+
+        socket.emit('mondai_btnclick',(question_data,selecter));
       })
       //
 

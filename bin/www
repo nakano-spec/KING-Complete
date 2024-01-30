@@ -956,7 +956,7 @@
         }
       })
    
-       /*socket.on('mondai_btnclick',(mondai,o) => {
+       socket.on('mondai_btnclick',(mondai,o) => {
        
          if(mondai != ''){
            var pool = poolCluster.of('MASTER');
@@ -987,7 +987,7 @@
                     return;
                   }else{
                     console.log("リセット");
-                    connection.query(get_id_sql,mondai,(err,question_id,fields) =>{
+                    connection.query(get_id_sql,mondai.question_name,(err,question_id,fields) =>{
                   if(err){
                     console.log(err);
                   }
@@ -1067,9 +1067,9 @@
             })
           })
         }
-      })*/
+      })
 
-      socket.on('mondai_btnclick',(question_data) => {
+      /*socket.on('mondai_btnclick',(question_data) => {
         console.log(question_data.userName);
        if(question_data != ''){
          var pool = poolCluster.of('MASTER');
@@ -1130,7 +1130,7 @@
            }
          })
       }
-    })
+    })*/
 
       socket.on('kiroku',(m1,kaitou1) =>{
    
