@@ -4,7 +4,7 @@ const router = express.Router();
 router.get('/', (req, res) => {
     var app = req.app;
     var QuestionSql = 'SELECT question_name, question_text FROM question_table;';
-    var poolCluster = app.get('pool2');
+    var poolCluster = app.get('pool');
     var pool = poolCluster.of('MASTER');
 
     //dbと接続できたか
@@ -29,7 +29,6 @@ router.get('/', (req, res) => {
         });
         
         //削除
-
        /* connection.query(QuestionDelete,(err3, results2) => {
             if (err3) {
                 console.error("Query error:", err3);

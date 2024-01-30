@@ -21,7 +21,7 @@ n.okuru.addEventListener('click',function(e){
 }
  let element= s.selectedIndex;
  var a = s.options[element].innerText;
- let newwin = open("/h");
+ let newwin = open("/hyouji2");
  socket.emit('mondai_btnclick',a,o); //mondai
 })
 
