@@ -1,0 +1,33 @@
+@charset "UTF-8";
+body{
+    font-family: Arial,sans-serif;
+}
+.header {
+    background-color: #fd9221;
+    padding: 10px;
+    text-align: center;
+}
+.button {
+    background-color: #f0f0f0;
+    border: none;
+    padding: 10px 20px;
+    margin: pointer;
+}
+.search-box {
+    padding: pointer;
+}
+table {
+    width: 100%;
+    border-collapse:collapse;
+}
+th, td {
+    border: 1px solid #dddddd;
+    text-align: left;
+    padding: 8px;
+}
+th {
+    background-color: #f4973b;
+}
+.radio-button {
+    margin-right: 15px;
+}

@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="ja">
+    <head>
+        <meta charset="utf-8">
+        <title>
+            受付中
+        </title>
+        <link type="text/css" rel="stylesheet" href="/stylesheets/mondai3.css">
+    </head>
+    <body>
+        <script src ='/socket.io/socket.io.js'></script>
+        <p id="nameElement"><%= name %></p>
+        <div id="my">
+            <p><%= second %></p>
+        </div>
+        <div class="rem" >
+        <div id = "remain" class = "rem2"></div>
+        <div id = remain3 class = "rem3">:</div>
+        <div id="remain2" class = "rem4"></div>
+        </div>
+       
+        <form name = myform2>
+        <div class="example">
+            
+            <br>
+            <br>
+            <br>
+            <input type ="submit" class ="s" name="button3" value ="回答終了">
+            <br>
+            <br>
+            <input type="submit" class="a" name="kekka" value ="回答結果へ">
+        </div>
+        </form>
+        <script>
+            var f  = document.forms.myform2;
+            var socket = io();
+            var rend = document.getElementById('my');
+            var p2 = rend.innerText;
+            var p3 = parseInt(p2/60,10);
+            var p4 = p2%60
+            var nameValue = document.getElementById('nameElement').innerText;
+            console.log(nameValue);
+            if(p3 == 0 && p4 == 0){
+                remain.innerText=p3;
+                remain2.innerText=p4;
+            }else{
+                var countdownid = setInterval(function() {
+                    if(p4 === 0) {
+                        if(p3 > 0) {
+                            p3--;
+                            p4 = 59;
+                        }
+                    } else {
+                        p4--;
+                    }
+
+                    remain.innerText = p3;
+                    remain2.innerText = p4;
+
+                    if(p3 === 0 && p4 === 0) {
+                        clearInterval(countdownid);
+                    }
+                }, 1000);
+            }            
+
+            f.button3.addEventListener('click',function(e){
+                e.preventDefault();
+                socket.emit('owa2');
+            })
+
+            f.kekka.addEventListener('click',function(e){
+                e.preventDefault();
+                window.location.href = '/mondai3?name=' + encodeURIComponent(nameValue);
+            })
+        </script>
+    </body>
+</html>

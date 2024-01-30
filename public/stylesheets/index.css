@@ -1,0 +1,34 @@
+p{
+  font-size: 1px;
+}
+.R{
+  display: flex;
+  justify-content: center;
+  border: solid 3px;
+}
+.hun{
+  font-size: 50px;
+}
+.ti{
+  font-size: 50px;
+}
+.byou{
+  font-size: 50px;
+}
+h1{
+text-align: center;
+}
+.picture{
+width: 1000px;
+height:1000px;
+text-align: center;
+}
+.example{
+text-align: center;
+width: 600px;
+height: 400px;
+}
+body{
+background-color: #fffca9;
+background-size: cover;
+}

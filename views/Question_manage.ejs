@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="ja">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>問題管理システム</title>
+        <link href="/stylesheets/Question_manage.css" rel="stylesheet">
+        <style>
+            /* ここにスタイルを記述 */
+    
+        </style>
+    </head>
+
+<body>
+
+<div class="header">
+    <h1>問題管理システム</h1>
+</div>
+
+<form action="/Question_manage/delete" method="post">
+    <div>
+        <button class="button">新規作成</button>
+        <button type="submit" class="button">選択した問題の削除</button>
+        <button class="button">選択した問題の編集</button>
+        <input type="text" placeholder="検索..." class="search-box">
+        <button class="search-button">🔎</button>
+    </div>    
+    <table>
+        <tr>
+            <th>選択</th>
+            <th>問題名</th>
+            <th>問題文</th>
+        </tr>
+        <% questions.forEach(function(question) { %>
+            <tr>
+                <td><input type="checkbox" name="selectedQuestions" value="<%= question.question_name %>"></td>
+                <td><%= question.question_name %></td>
+                <td><%= question.question_text %></td>
+            </tr>
+        <% }); %>
+    </table>
+</form>
+
+<a href="http://localhost:3000/mondai?name=sensei">問題出題</a>
+</body>
+</html>
