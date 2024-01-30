@@ -342,6 +342,7 @@
     socket.on('kekkahyouji',()=>{
         io.emit('kekkahyouji2');
     })
+    
     // login
     socket.on('login_btnclick', (login_name,login_pass1) => {
           
