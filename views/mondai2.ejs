@@ -2,281 +2,67 @@
 <html lang = "ja">
 <head>
     <meta charset ="utf-8">
-    <title>問題選択</title>
-</head>
+    <title>問題出題</title>
+    <link type="text/css" rel="stylesheet" href="/stylesheets/mondai2.css">
+</head>  
+<header>
+  <nav>
+    <h1 class = "title">問題出題画面</h1>
+  </nav>
+</header>
+
+<!--ハンバーガー作成-->
+<nav class="ham_menu">
+  <ul class="ham">
+    <li><a href="#">Home</a></li>
+    <li><a href="#">Menu</a></li>
+    <li><a href="#">News</a></li>
+    <li><a href="#">Contact</a></li>
+  </ul>
+  <button type="button" id="hambtn"></button>
+</nav>
+<!--ハンバーガー作成-->
+
 <body>
     <script src="/socket.io/socket.io.js"></script>
-    <p id="userName" data-name="<%= name %>"><%= name %></p>
+    <p><%= name %></p>
     <br>
-    <h1>問題一覧</h1>
     <form name ="f1">
         <div class="parent">
+        <h1>問題一覧</h1>
         <div class="child">
+        <input type ="submit" name="tuika" class = "tui"value="問題追加">
+        <br>
+        <br>
+        <input type="submit" name="kakunin"class = "tui2" value="問題確認">
         </div>
         </div>
-        <p>試験名を選択してください。</p>
-        <select id="qualification-select" name = "mo1" class="cp_sl02" required>
+        <p>問題を選択してください。</p>
+        <!--問題名-->
+        <select  name = "mo1" class="cp_sl02" required>
            <% web.forEach((list) => { %>
-            <option><%= list.qualification_name %></option>
+            <option><%= list.question_name %></option> 
             <% }) %>
-        </select>
-
-        <p>年度を選択してください。</p>
-        <select id="year-select" name="year">
-          <% web.forEach((list) => { %>
-            <option><%= list.question_years %></option>
-            <% }) %>
-        </select>
-
-        <p>問題名を選択してください。</p>
-        <select id="question-select" name="question">
-          <% web.forEach((list) => { %>
-            <option><%= list.question_name %></option>
-            <% }) %>
-        </select>
-
-        <p>ジャンルを選択してください。</p>
-        <select id="genre-select" name="genre">
-          <% web.forEach((list) => { %>
-          <option><%= list.question_genre %></option>
-          <% }) %>
         </select>
         <span class="cp_sl02_highlight"></span>
         <span class="cp_sl02_selectbar"></span>
+        <label class="cp_sl02_selectlabel">問題を選んでください。</label>
         <br>
-        <p>回答の成否判定の仕方を選択してください。</p>
+        <p>回答の正否判定の仕方を選択してください。</p>
         <br>
         <input type="radio" name = "hantei" value="自動">自動
         <input type="radio" name = "hantei" value="手動">手動
         <br>
-        <p>制限時間を分と秒で入力してください。</p>
-          <input id = "time1" type ="text" name="minute" style="width:40px; height: 20px;">分
-          <input id = "time2" type ="text" name="second" style="width:40px; height: 20px;">秒
+        <p>制限時間を秒単位で入力してください。</p>
+          <input id = "time2" type ="text" name="byou" style="width:40px; height: 20px;">
         <br>
         <br>
-        <input type ="submit" class ="button" name = "send" value="問題を送る">
+        <input type ="submit" class ="button" name = "okuru" value="出題する">
         <br>
-        <br>
-        <input type ="submit" name="tuika" class = "tui" value="問題追加">
-        <br>
-        <br>
-        <input type="submit" name="check" class = "tui" value="問題確認">
-        <br>
-        <br>
-        <input type="submit" name="display" class = "tui" value="問題表示">
     </form>
     <div class="sumple">
       <a href="http://localhost:3000/login">戻る</a>
     </div>
-    <script>
-      //socket.ioの読み込み
-      var socket = io();
-      //
-      //データの読み取り
-      var n = document.forms.f1;
-      var s = document.f1.mo1; 
-      var flag = false;
-      var m = document.f1.hantei;
-      var userNameElement = document.getElementById('userName');
-      var userName = userNameElement.getAttribute('data-name');
-      var web = <%- JSON.stringify(web) %>;
-      //
-      //
-      window.onload = function() {
-        // 年度のデータが含まれていると想定されるweb変数を使用
-        var yearsData = web; // この変数はサーバーから提供されるデータを想定
-
-        // 年度セレクトボックスを更新する関数を呼び出し
-        updateYearSelect(yearsData);
-      };
-
-      function updateYearSelect(years) {
-          var yearSelect = document.getElementById('year-select');
-          yearSelect.innerHTML = ''; // 既存のオプションをクリア
-
-          // 重複を排除した年度の配列を生成
-          var uniqueYears = [...new Set(years.map(data => data.question_years))];
-          
-          // 新しい年度の選択肢を追加
-          uniqueYears.forEach(function(year) {
-              var option = document.createElement('option');
-              option.textContent = year;
-              yearSelect.appendChild(option);
-          });
-      }
-      //
-      //自動・手動どちらかが入る変数
-      var selecter = 0;
-      //自動・手動どちらが選択されているか見て選択された方の値を入れる。
-      for(var i = 0;i<m.length;i++){
-        if(m[i].checked){
-          flag = true;
-          selecter = m[i].value;
-        }
-      }
-      //
-
-      //試験名が選択されるとwwwのelectedQualificationNameにSocket.ioで試験名を送信する。
-      document.f1.mo1.addEventListener('change', function() {
-        var selectedQualificationName = this.value;
-        socket.emit('requestQualificationData', selectedQualificationName);
-      });
-      //
-
-      //年度が選択されるとwwwのelectedQualificationyearsにSocket.ioで年度を送信する。
-      document.f1.year.addEventListener('change', function() {
-        var selectedQualificationyears = this.value;
-        socket.emit('requestquestionname', selectedQualificationyears);
-      });
-      //
-
-      //問題名が選択されるとwwwのelectedQualificationquestionにSocket.ioで問題名を送信する。
-      document.f1.question.addEventListener('change', function() {
-        var selectedQualificationquestion = this.value;
-        socket.emit('requestgenre', selectedQualificationquestion);
-      });
-      //
-
-      //wwwのelectedQualificationNameから年度・問題名・ジャンルのデータを取得し、セレクトボックス内のデータを
-      //更新する。
-      socket.on('qualificationData', function(data) {
-          updateYearSelect(data);
-          updateQuestionSelect(data);
-          updateGenreSelect(data);
-      });
-      //
-
-      //wwwのelectedQualificationyearsから問題名とジャンルのデータを取得し、セレクトボックス内のデータを
-      //更新する。
-      socket.on('questionname', function(data) {
-          updateQuestionSelect(data);
-          updateGenreSelect(data);
-      });
-      //wwwのelectedQualificationquestionからジャンルのデータを取得し、セレクトボックス内のデータを
-      //更新する。
-      socket.on('questiongenre', function(data) {
-          updateGenreSelect(data);
-      });
-
-      //年度、問題名、ジャンルのセレクトボックスを更新する関数
-      function updateYearSelect(years) {
-          var yearSelect = document.getElementById('year-select');
-          yearSelect.innerHTML = ''; // 既存のオプションをクリア
-
-          // 新しい年度の選択肢を追加
-          years.forEach(function(data) {
-              var option = document.createElement('option');
-              option.textContent = data.question_years; // 年度を表す名称
-              yearSelect.appendChild(option);
-          });
-      }
-
-      //問題名、ジャンルのセレクトボックスを更新する関数
-      function updateQuestionSelect(years) {
-          var yearSelect = document.getElementById('question-select');
-          yearSelect.innerHTML = ''; // 既存のオプションをクリア
-
-          // 新しい年度の選択肢を追加
-          years.forEach(function(data) {
-              var option = document.createElement('option');
-              option.textContent = data.question_name; // 年度を表す名称
-              yearSelect.appendChild(option);
-          });
-      }
-      //
-
-      //ジャンルのセレクトボックスを更新する関数
-      function updateGenreSelect(years) {
-          var yearSelect = document.getElementById('genre-select');
-          yearSelect.innerHTML = ''; // 既存のオプションをクリア
-
-          // 新しい年度の選択肢を追加
-          years.forEach(function(data) {
-              var option = document.createElement('option');
-              option.textContent = data.question_genre; // 年度を表す名称
-              yearSelect.appendChild(option);
-          });
-      }
-
-      //問題送信処理(選択した試験名、年度、問題名、ジャンル、採点方式、タイマーデータをwwwのmondai_btnclick)
-      //に送信する。
-      n.send.addEventListener('click',function(e){
-        e.preventDefault();
-        var selectedQualificationName = document.getElementById('qualification-select').value;
-        var selectedYear = document.getElementById('year-select').value;
-        var selectedQuestion = document.getElementById('question-select').value;
-        var selectedGenre = document.getElementById('genre-select').value;
-        var minute = parseInt(document.getElementById('time1').value, 10);
-        var seconds = parseInt(document.getElementById('time2').value, 10);
-        var totalSeconds = (minute * 60) + seconds;
-        for(var i = 0;i<m.length;i++){
-          if(m[i].checked){
-            flag = true;
-            selecter = m[i].value;
-          }
-        }
-
-        var question_data ={
-          userName:userName,
-          qualification:selectedQualificationName,
-          Year:selectedYear,
-          question_name:selectedQuestion,
-          genre:selectedGenre,
-          Scoring_method:selecter,
-          minutes:minute,
-          seconds:totalSeconds
-        }
-        console.log(question_data);
-        socket.emit('mondai_btnclick',question_data);
-      })
-      //
-
-      //問題確認ボタンが押された際の処理
-      n.check.addEventListener('click',function(e){
-        e.preventDefault();
-        // 各セレクトボックスの値を取得
-        var selectedQualificationName = document.getElementById('qualification-select').value;
-        var selectedYear = document.getElementById('year-select').value;
-        var selectedQuestion = document.getElementById('question-select').value;
-        var selectedGenre = document.getElementById('genre-select').value;
-
-        //オブジェクト化
-        var data ={
-          Qualification:selectedQualificationName,
-          year:selectedYear,
-          selectedQuestion:selectedQuestion,
-          genre:selectedGenre
-        }
-         
-        //オブジェクトをURLパラメータ形式に変換する。
-        var queryParams = Object.keys(data).map(function(key) {
-          return encodeURIComponent(key) + '=' + encodeURIComponent(data[key]);
-        }).join('&');
-
-        //URLにオブジェクトをくっつけて画面遷移させる。（route/kakunin.jsへ行く。）
-        window.location.href = "/kakunin?" + queryParams;
-      })
-
-      n.tuika.addEventListener('click',function(e){
-        e.preventDefault();
-        window.location.href="/tuika";
-      })
-
-      n.display.addEventListener('click',function(e){
-        e.preventDefault();
-        window.open('/hyouji2');
-      })
-
-      socket.on('mondai_kekka',function(flag){
-        if(flag = 1){
-          var minute = parseInt(document.getElementById('time1').value, 10);
-          var seconds = parseInt(document.getElementById('time2').value, 10);
-          var totalSeconds = (minute * 60) + seconds;
-          window.location.href = '/mondai2?second=' + encodeURIComponent(totalSeconds) + '&name=' + encodeURIComponent(userName);
-        }else{
-          window.location.href = '/hello'
-        }
-      })
-    </script>
+    <script src="/javascripts/mondai2.js"></script>
 </body>
 </html>

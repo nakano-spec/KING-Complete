@@ -7,7 +7,6 @@ const async = require('async');
 
 router.get("/", (req, res)=>{
     var app = req.app;
-    var name1 = req.query.name;
     var name1 = req.session.user.username;
     var poolCluster = app.get('pool');
     var pool = poolCluster.of('MASTER');
@@ -19,7 +18,7 @@ router.get("/", (req, res)=>{
     /*var bun = 0;
     var name1 = 0;
     var time1 = 0;*/
-    //const sql = "select room_ID from login_log where user_ID = ?;";
+    const sql = "select room_ID from login_log where user_ID = ?;";
     pool.getConnection(function(err,connection){
         //connection.query(sql4,(err,result2,fields)=>{
             async.waterfall([
@@ -43,14 +42,9 @@ router.get("/", (req, res)=>{
                    }) 
                 },
                 function(roomID,callback){ 
-                    var sql2 = "select question_ID from question_log where room_ID = ?;";
+                    console.log(roomID);
                     var sql2 = "select question_ID from question_log where room_ID = ? and question_status = 1;";
                     connection.query(sql2,roomID,(err,result2,field)=>{
-                        if(err){
-                            console.log(err);
-                        }
-                        console.log(result2[0].question_ID);
-                        callback(null,roomID,result2[0].question_ID);
                         if(result2 && result2.length > 0){
                             console.log(result2[0].question_ID);
                             callback(null,roomID,result2[0].question_ID);
@@ -76,7 +70,7 @@ router.get("/", (req, res)=>{
                 },
                 function(roomID,questionID,result,callback){
                     if(result == 0){
-                        var sql4 = "select q.question_text,l.limit_time from question_table q,question_log l where q.question_ID = l.question_ID and l.question_ID = ? and l.room_ID = ?;";
+                        var sql4 = "select q.question_text,l.limit_time from question_table q,question_log l where q.question_ID = l.question_ID and l.question_ID = ? and l.room_ID = ? and l.question_status = 1;";
                         connection.query(sql4,[questionID,roomID],(err,result4,field)=>{
                             if(err){
                                 console.log(err);

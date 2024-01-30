@@ -5,23 +5,22 @@ const mysql = require("mysql");
 /* GET users listing. */
 router.get('/', function(req, res, next) {
   var by = req.query.byou;
+  console.log(by);
   by = Math.abs(by);
   var app = req.app;
   var poolCluster = app.get("pool");
   var pool = poolCluster.of('MASTER');
   const set_time = "UPDATE question_log SET limit_time  = ? WHERE question_status = 1 AND room_ID = 1;"
-  var second1 = parseInt(req.query.second);
+  var second1 = parseInt(by);
   var name1 = req.query.name;
   /*const sql1 = "select mon_ID from mondai_LIST where sentaku = '1';"
-  const sql2 = "insert into time_LIST(mon_ID,time) values(?,?);"
+  const sql2 = "insert into time_LIST(mon_ID,time) values(?,?);"*/
   pool.getConnection(function(err,connection) {
     if(err != null){
       console.log("DB接続" + err);
       return;
     }
-
     connection.query(set_time,[by],(err,result,fields) =>{
-    connection.query(sql1,(err,result,fields) =>{
       if(err){
         console.log("時間" + err);
       }
@@ -34,7 +33,7 @@ router.get('/', function(req, res, next) {
   })
   var data1={
     byou1:by
-  }*/
+  }
   var data1　={
     second:second1,
     name:name1
