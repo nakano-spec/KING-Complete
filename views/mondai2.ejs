@@ -36,7 +36,7 @@
         <input type="submit" name="kakunin"class = "tui2" value="問題確認">
         </div>
         </div>
-        <p>問題を選択してください。</p>
+        <p>試験名を選択してください。</p>
         <!--問題名-->
         <select id="qualification-select" name = "mo1" class="cp_sl02" required>
           <% web.forEach((list) => { %>
@@ -50,7 +50,7 @@
            <option><%= list.question_years %></option>
            <% }) %>
        </select>
-
+       <p>問題を選択してください。</p>
         <select id="question-select" name = "question" class="cp_sl02" required>
            <% web.forEach((list) => { %>
             <option><%= list.question_name %></option> 
@@ -58,7 +58,7 @@
         </select>
 
         <p>ジャンルを選択してください。</p>
-        <select id="genre-select" name="genre">
+        <select id="genre-select" name="genre" class="cp_sl02">
           <% web.forEach((list) => { %>
           <option><%= list.question_genre %></option>
           <% }) %>
@@ -74,7 +74,7 @@
         <input type="radio" name = "hantei" value="手動">手動
         <br>
         <p>制限時間を秒単位で入力してください。</p>
-          <input id = "time2" type ="text" name="byou" style="width:40px; height: 20px;">
+          <input id = "time2" type ="text" name="byou"　min="1" max="3600" style="width:40px; height: 20px;">
         <br>
         <br>
         <input type ="submit" class ="button" name = "okuru" value="出題する">
@@ -92,25 +92,26 @@
       var m = document.f1.hantei;
       var o = 0;
       var web = <%- JSON.stringify(web) %>;
-      for(var i = 0;i<m.length;i++){
-      if(m[i].checked){
-        flag = true;
-        o = m[i].value;
-      }
-      }
-
       n.okuru.addEventListener('click',function(e){
         e.preventDefault();
+        //採点形式の選択などの抜けもれがないか確認
         for(var i = 0;i<m.length;i++){
-        if(m[i].checked){
-          flag = true;
-          o = m[i].value;
+          if(m[i].checked){
+            flag = true;
+            o = m[i].value;
+          }
         }
-      }
-      let element= s.selectedIndex;
-      var a = s.options[element].innerText;
-      let newwin = open("/hyouji2");
-      socket.emit('mondai_btnclick',a,o); //mondai
+        if(flag == false){
+          alert("採点形式が選択されていません。");
+        }
+        var w = n.time2.value;
+        if((!w)){
+          alert("制限時間が入力されていません。");
+        }else if(w.match(/[^0-9]/g)){
+          alert("入力は数字のみです");
+        }
+        //
+        socket.emit('room_IDserach');
       })
 
       n.kakunin.addEventListener('click',function(e){
@@ -125,12 +126,24 @@
       window.location.href="/tuika";
       })
 
-
+      socket.on('room_IDget',function(room_ID){
+       for(var i = 0;i<m.length;i++){
+          if(m[i].checked){
+            flag = true;
+            o = m[i].value;
+          }
+        }
+        let element= s.selectedIndex;
+        var a = s.options[element].innerText;
+        let newwin = open("/hyouji2");
+        socket.emit('mondai_btnclick',a,o,room_ID); //mondai
+      })
 
       socket.on('mondai_kekka',function(flag){
       if(flag = 1){
         var w = n.time2.value;
-          window.location.href = '/mondai2?byou=' + encodeURIComponent(w);
+        var time = sanitize(w);
+        window.location.href = '/mondai2?byou=' + encodeURIComponent(time);
       }else{
       window.location.href = '/hello'
       }
@@ -238,6 +251,20 @@
               option.textContent = data.question_genre; // 年度を表す名称
               yearSelect.appendChild(option);
           });
+      }
+
+      //サニタイズ処理
+      function sanitize(str) {
+          return String(str)
+              .replace(/&/g, '&amp;')
+              .replace(/</g, '&lt;')
+              .replace(/>/g, '&gt;')
+              .replace(/"/g, '&quot;')
+              .replace(/'/g, '&#x27;')
+              .replace(/\//g,'&#x2F;')
+              .replace(/:/g, '')  // コロンを取り除く
+              .replace(/;/g, '') // セミコロンを取り除く
+              .replace(/\*/g, ''); // アスタリスクを完全に除去
       }
     </script>
 </body>

@@ -613,7 +613,7 @@
       }
     })
 
-     socket.on('kiroku',(m1,kaitou1) =>{
+     /*socket.on('kiroku',(m1,kaitou1) =>{
   
       let monname = 'select m.mon_ID,s.seikai from mondai_LIST m ,seikai_LIST s where sentaku = 1 and m.mon_ID = s.mon_ID;'
       let seikai = 'select kaitou from mondai_LIST where sentaku = 1;'
@@ -664,9 +664,9 @@
      })
   });*/
 
-        })
+        /*})
       })
-    })
+    })*/
     
      socket.on('clear',()=>{
         var userID = socket.request.session.user.username;
@@ -901,6 +901,7 @@
   });
    
         socket.on('account_delete',(user_ID)=>{
+          var user_ID1 = sanitizeHtml(user_ID);
           var sql = "delete from user_table where user_ID = ?;";
           connection.query(sql,user_ID,(err,result,field)=>{
             if(err){
@@ -911,8 +912,9 @@
         })
 
         socket.on('search_accounts', function(searchTerm) {
+          var searchTerm1 = sanitizeHtml(searchTerm);
           const sql = 'SELECT user_ID, user_name, password,log_time FROM user_table WHERE user_ID LIKE ? OR user_name LIKE ? OR password LIKE ?';
-          connection.query(sql, [`%${searchTerm}%`, `%${searchTerm}%`, `%${searchTerm}%`], function(err, results) {
+          connection.query(sql, [`%${searchTerm1}%`, `%${searchTerm1}%`, `%${searchTerm1}%`], function(err, results) {
               if (err) {
                   // エラー処理
                   console.log(err);
@@ -955,24 +957,26 @@
         }
       })
 
-      socket.on('mondai_btnclick',(mondai,o) => {
-       
+      socket.on('mondai_btnclick',(mondai,o,room_ID) => {
+         var mondai1 = sanitizeHtml(mondai);
+         var o = sanitizeHtml(o);
+         var room_ID = sanitizeHtml(room_ID);
          if(mondai != ''){
            var pool = poolCluster.of('MASTER');
-           var mondai_select = "select question_table.question_ID,question_text from question_table,question_log where question_log.question_ID=question_table.question_ID AND question_status = 1 AND room_ID = 1;" //選択した問題SQL
-           let mondai_sentaku = "insert into question_log(question_id,room_id,question_status) VALUES (?,1,1) ;"  //出題問題SQL
+           var mondai_select = "select question_table.question_ID,question_text from question_table,question_log where question_log.question_ID=question_table.question_ID AND question_status = 1 AND room_ID = ?;" //選択した問題SQL
+           let mondai_sentaku = "insert into question_log(question_id,room_id,question_status) VALUES (?,?,1) ;"  //出題問題SQL
            let sql3 = "insert into judge_table(judge_ID,question_ID) values(?,?);" 
            let sql4 = "select judge_ID from judge_type where judge_type = ?;"  //判定形式SQL
            let get_id_sql = "select question_ID from question_table where question_name=?;"
-           let get_status = "select count(*) as cnt from question_log where room_ID = 1 AND question_status = 1;"
-           let question_reset = "update question_log set question_status = 0 WHERE room_id = 1;"
-
+           let get_status = "select count(*) as cnt from question_log where room_ID = ? AND question_status = 1;"
+           let question_reset = "update question_log set question_status = 0 WHERE room_id = ?;"
+           console.log(room_ID); 
            pool.getConnection(function(err,connection){
              if(err != null){
                console.log("db" + err);
                return;
              }
-             connection.query(get_status,(err,status_count,fields) =>{
+             connection.query(get_status,[room_ID],(err,status_count,fields) =>{
               if(err){
                 console.log("wawawa" + err);
                 return;
@@ -980,23 +984,23 @@
               console.log("count" + status_count[0].cnt);
               if(status_count[0].cnt >= 1){
                 console.log("count" + status_count[0].cnt);
-                connection.query(question_reset,(err,fields) =>{
+                connection.query(question_reset,[room_ID],(err,fields) =>{
                   if(err){
                     console.log("reset " + err);
                     return;
                   }else{
                     console.log("リセット");
-                    connection.query(get_id_sql,mondai,(err,question_id,fields) =>{
+                    connection.query(get_id_sql,mondai1,(err,question_id,fields) =>{
                   if(err){
                     console.log(err);
                   }
                   var q_ID = question_id[0].question_ID;
-                  connection.query(mondai_sentaku,q_ID,(err,mondai_result,fields) =>{
+                  connection.query(mondai_sentaku,[q_ID,room_ID],(err,mondai_result,fields) =>{
                     if(err){
                       console.log("sentaku_err" + err);
                     }
                     connection.commit((err) =>{if(err){connection.rollback(() =>{throw console.log('error');});}})
-                    connection.query(mondai_select,(err,mondai_result2,fields)=>{
+                    connection.query(mondai_select,[room_ID],(err,mondai_result2,fields)=>{
                       if(err){
                         var flag = 0;
                         io.emit('mondai_kekka',flag);
@@ -1025,19 +1029,19 @@
                 })
               }else{
                 console.log("naiyo--");
-                connection.query(get_id_sql,mondai,(err,question_id,fields) =>{
+                connection.query(get_id_sql,mondai1,(err,question_id,fields) =>{
                   if(err){
                     console.log(err);
                   }
                   var q_ID = question_id[0].question_ID;
-                  connection.query(mondai_sentaku,q_ID,(err,mondai_result,fields) =>{
+                  connection.query(mondai_sentaku,[q_ID,room_ID],(err,mondai_result,fields) =>{
                     if(err){
                       console.log("sentaku_err" + err);
                     }
                       connection.commit((err) =>{
                       if(err){connection.rollback(() =>{throw console.log('error');});}
                     })
-                    connection.query(mondai_select,(err,mondai_result2,fields)=>{
+                    connection.query(mondai_select,room_ID,(err,mondai_result2,fields)=>{
                       if(err){
                       var flag = 0;
                       io.emit('mondai_kekka',flag);
@@ -1068,6 +1072,22 @@
         }
       })
        
+      socket.on('room_IDserach',() =>{
+        var pool = poolCluster.of('MASTER');
+        var username = socket.request.session.user.username;
+        var room_IDserachsql = "select room_ID from room_table where user_ID =?;"
+        pool.getConnection(function(err,connection){
+          if(err){
+            console.log(err);
+          }
+          connection.query(room_IDserachsql,username,(err,room_IDresult,field)=>{
+            if(err){
+              console.log(err);
+            }
+            io.emit('room_IDget',room_IDresult[0].room_ID);
+          })
+        })
+      })
       /*socket.on('mondai_btnclick',(mondai,o) => {
          if(mondai != ''){
            var pool = poolCluster.of('MASTER');

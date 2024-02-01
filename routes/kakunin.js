@@ -1,6 +1,6 @@
 var express = require('express');
 var router = express.Router();
-
+const async = require('async');
 /* GET users listing. */
 
 //画面遷移してきたらrouter.get内の処理が読み込まれる。

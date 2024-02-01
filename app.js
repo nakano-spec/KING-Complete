@@ -174,7 +174,8 @@ app.use('/question_list',question_listRouter);
 app.use('/question_addition',question_additionRouter);
 app.use('/question_edit',question_editRouter);
 
-
+const helmet = require('helmet');
+app.use(helmet());
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

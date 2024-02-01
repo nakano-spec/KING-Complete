@@ -6,12 +6,29 @@ const async = require('async');
 /* GET users listing. */
 router.get('/', function(req, res, next) {
    var app = req.app;
-   var sql = 'select u.username,k.kai,k.result from answer_table k,users u where k.user_ID = u.user_ID;'
-   var username = req.query.username;
-   console.log(username);
-   var sql = 'select room_ID from room_table where user_ID =?;'
    var poolCluster = app.get("pool");
    var pool = poolCluster.of('MASTER');
+   if(!req.session.user || req.session.page !== 2 || req.session.Before_page !== 1){
+    var select1 = "select u.user_name from room_table r, user_table u where r.user_ID = u.user_ID;"
+    async.waterfall([
+      function(callback){
+          pool.getConnection(function(err,connection){
+            connection.query(select1,(err,result,fields)=>{
+              if(err){
+                console.log(err);
+              }
+              callback(null,result);
+            })
+          });
+      }
+      ],
+      function(err,results){
+        res.render('login.ejs',{data:results});
+      }); 
+  }else{
+    var sql = 'select u.username,k.kai,k.result from answer_table k,users u where k.user_ID = u.user_ID;'
+   var username = req.query.username;
+   var sql = 'select room_ID from room_table where user_ID =?;'
    //connection.query(sql,username,(err,results,fields)=>{
     //res.render('hyouji4',{han1:results});
    //})
@@ -55,6 +72,7 @@ router.get('/', function(req, res, next) {
          res.render('hyouji2');
      })
    })
+  }
 });
 
 module.exports = router;
