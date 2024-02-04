@@ -930,10 +930,15 @@
           var user_ID1 = sanitizeHtml(user_ID);
           var login_log_delete = "delete from login_log where user_ID = ?;";
           var sql = "delete from user_table where user_ID = ?;";
-          connection.query(sql,user_ID,(err,result,field)=>{
+          connection.query(login_log_delete,user_ID,(err,result,field)=>{
             if(err){
               console.log(err);
             }
+            connection.query(sql,user_ID1,(err,result3,field)=>{
+              if(err){
+                console.log(err);
+              }
+            })
             io.emit('delete_complete');
           })
         })

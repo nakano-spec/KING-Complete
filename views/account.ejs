@@ -46,6 +46,13 @@
       </table>
     </ul>
   </div>
+  <!-- 確認用ドロップダウンメニュー -->
+  <div id="confirmation-dropdown" class="hidden">
+    <p>削除してもよろしいですか？</p>
+    <button id="confirm-delete-button">はい</button>
+    <button id="cancel-delete-button">キャンセル</button>
+  </div>
+
 
   <script>
     var socket = io();
@@ -150,12 +157,14 @@
             var user_ID = selectedCheckboxes[0].value;
             console.log(user_ID);
             if (selectedCheckboxes.length === 1) {
+              document.getElementById('confirmation-dropdown').classList.remove('hidden');
                 socket.emit('account_delete',user_ID);
             } else {
                 alert('ユーザーを選択してください。');
             }
         });
 
+        
         socket.on('delete_complete',function(){
             window.location.href='/account';
         })
