@@ -6,24 +6,26 @@ const async = require('async');
 /* GET users listing. */
 router.get("/", (req, res)=> {
     if(!req.session.user || req.session.page !== 2 || req.session.Before_page !== 1){
-        var select1 = "select u.user_name from room_table r, user_table u where r.user_ID = u.user_ID;"
-        async.waterfall([
-          function(callback){
-              pool.getConnection(function(err,connection){
-                connection.query(select1,(err,result,fields)=>{
-                  if(err){
-                    console.log(err);
-                  }
-                  callback(null,result);
-                })
-              });
-          }
-          ],
-          function(err,results){
-            res.render('login.ejs',{data:results});
-          }); 
+            res.render('login.ejs');
       }else{
-        res.render('account_additionChange.ejs');
+        var user_ID = req.query.userId;
+        var app = req.app;
+        var poolCluster = app.get('pool');
+        var pool = poolCluster.of('MASTER');
+        var sql = 'select user_name,password from user_table where user_ID = ?;'
+        pool.getConnection(function(err,connection){
+          connection.query(sql,user_ID,(err,result,field)=>{
+            if(err){
+              console.log(err);
+            }
+            var data = {
+              user_ID:user_ID,
+              user_name:result[0].user_name,
+              password:result[0].password
+            }
+            res.render('account_additionChange.ejs',data);
+          })
+        })
       }
 });
 

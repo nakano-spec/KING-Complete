@@ -11,22 +11,7 @@ router.get('/', function(req, res, next) {
   var poolCluster = app.get('pool');
   var pool = poolCluster.of('MASTER');
   if(!req.session.user || req.session.page !== 2 || req.session.Before_page !== 1){
-    var select1 = "select u.user_name from room_table r, user_table u where r.user_ID = u.user_ID;"
-    async.waterfall([
-      function(callback){
-          pool.getConnection(function(err,connection){
-            connection.query(select1,(err,result,fields)=>{
-              if(err){
-                console.log(err);
-              }
-              callback(null,result);
-            })
-          });
-      }
-      ],
-      function(err,results){
-        res.render('login.ejs',{data:results});
-      }); 
+        res.render('login.ejs');
   }else{
     var sql = 'select t.role_name from user_table u,User_Role t where u.user_type = t.user_type and u.user_ID = ?;';
   pool.getConnection(function(err,connection){

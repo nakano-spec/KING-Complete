@@ -31,3 +31,11 @@ th {
 .radio-button {
     margin-right: 15px;
 }
+
+.ellipsis {
+    white-space: nowrap; /* 改行を防ぐ */
+    overflow: hidden; /* はみ出た内容を非表示 */
+    text-overflow: ellipsis; /* 省略符号を表示 */
+    max-width: 150px; /* 最大幅を設定（必要に応じて調整） */
+    cursor: pointer; /* クリック可能であることを示すカーソル */
+}

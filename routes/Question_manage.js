@@ -3,26 +3,11 @@ const router = express.Router();
 
 router.get('/', (req, res) => {
     var app = req.app;
-    var QuestionSql = 'SELECT question_name, question_text FROM question_table;';
+    var QuestionSql = "SELECT g.qualification_name,g.question_genre,g.question_years,q.question_name,q.question_text,COALESCE(s.select_1, '') AS select_1,COALESCE(s.select_2, '') AS select_2,COALESCE(s.select_3, '') AS select_3,COALESCE(s.select_4, '') AS select_4,a.type_name,CASE  WHEN q.picture_flag = 0 THEN '' ELSE p.pics_name END AS pics_name FROM question_table q LEFT JOIN select_table s ON q.question_ID = s.question_ID LEFT JOIN pics_table p ON q.question_ID = p.question_ID JOIN answer_type a ON q.type_ID = a.type_ID JOIN genre_table g ON q.question_ID = g.question_ID;";
     var poolCluster = app.get('pool');
     var pool = poolCluster.of('MASTER');
     if(!req.session.user || req.session.page !== 2 || req.session.Before_page !== 1){
-        var select1 = "select u.user_name from room_table r, user_table u where r.user_ID = u.user_ID;"
-        async.waterfall([
-          function(callback){
-              pool.getConnection(function(err,connection){
-                connection.query(select1,(err,result,fields)=>{
-                  if(err){
-                    console.log(err);
-                  }
-                  callback(null,result);
-                })
-              });
-          }
-          ],
-          function(err,results){
-            res.render('login.ejs',{data:results});
-          }); 
+            res.render('login.ejs');
       }else{
         //dbと接続できたか
         pool.getConnection(function(err1, connection) {
@@ -34,13 +19,13 @@ router.get('/', (req, res) => {
 
             //表示
             connection.query(QuestionSql,(err2, results) => {
-                
 
                 if (err2) {
                     console.error("Query error:", err2);
                     res.status(500).send("Database query error");
                     return;
                 }
+                console.log(results);
                 // クエリの結果をビューに渡す
                 res.render('Question_manage', { questions: results });
             });

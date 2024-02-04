@@ -8,6 +8,7 @@
 <header>
   <nav>
     <h1 class = "title">問題出題画面</h1>
+    
   </nav>
 </header>
 <!--ハンバーガー作成-->
@@ -20,8 +21,6 @@
   </ul>
   <button type="button" id="hambtn"></button>
 </nav>
-<!--ハンバーガー作成-->
-
 <body>
     <script src="/socket.io/socket.io.js"></script>
     <p><%= name %></p>
@@ -80,6 +79,12 @@
         <input type ="submit" class ="button" name = "okuru" value="出題する">
         <br>
     </form>
+    <button id="menu-button">メニュー</button>
+    <ul id="menu-dropdown" class="hidden">
+      <li><a href="#" id="main-link">メインメニュー</a></li>
+      <li><a href="#" id="question-link">アカウント一覧表示</a></li>
+      <li><a href="#" id="questionmanage-link">問題一覧表示</a></li>
+    </ul>
     <div class="sumple">
       <a href="http://localhost:3000/login">戻る</a>
     </div>
@@ -92,6 +97,22 @@
       var m = document.f1.hantei;
       var o = 0;
       var web = <%- JSON.stringify(web) %>;
+
+      const menuButton = document.getElementById('menu-button');
+      const menuDropdown = document.getElementById('menu-dropdown');
+
+      // ボタンクリック時の処理
+      menuButton.addEventListener('click', () => {
+        menuDropdown.classList.toggle('active'); // メニューを表示・非表示切り替え
+      });
+
+      // ドキュメント全体をクリックしたらメニューが非表示になるようにする
+      document.addEventListener('click', (event) => {
+        if (!menuButton.contains(event.target)) {
+          menuDropdown.classList.remove('active');
+        }
+      });
+
       n.okuru.addEventListener('click',function(e){
         e.preventDefault();
         //採点形式の選択などの抜けもれがないか確認
@@ -103,12 +124,15 @@
         }
         if(flag == false){
           alert("採点形式が選択されていません。");
+          return
         }
         var w = n.time2.value;
         if((!w)){
           alert("制限時間が入力されていません。");
+          return
         }else if(w.match(/[^0-9]/g)){
           alert("入力は数字のみです");
+          return
         }
         //
         socket.emit('room_IDserach');
@@ -266,6 +290,60 @@
               .replace(/;/g, '') // セミコロンを取り除く
               .replace(/\*/g, ''); // アスタリスクを完全に除去
       }
+
+      // 問題出題リンクの要素を取得
+      const questionLink = document.getElementById('question-link');
+      const mainLink = document.getElementById('main-link');
+      const questionmanagelink = document.getElementById('questionmanage-link');
+
+      // 問題出題リンクがクリックされた時の処理を設定
+      questionLink.addEventListener('click', function(event) {
+        // リンクのデフォルトの動作（ページ遷移）を防止
+        event.preventDefault();
+
+        // ここで特定の処理を実行
+        var page_update_No = 3;
+        socket.emit('pageupdate', page_update_No);
+
+        // その他のSocket.io処理やページ遷移などをここに追加
+      });
+
+      socket.on('page_updatecomplete',function(){
+              window.location.href = '/account'; // 問題出題画面のURL
+      });
+
+      
+
+      // 問題出題リンクがクリックされた時の処理を設定
+      mainLink.addEventListener('click', function(event) {
+        // リンクのデフォルトの動作（ページ遷移）を防止
+        event.preventDefault();
+
+        // ここで特定の処理を実行
+        var page_update_No = 2;
+        socket.emit('pageupdate', page_update_No);
+      });
+
+      questionmanagelink.addEventListener('click', function(event) {
+        // リンクのデフォルトの動作（ページ遷移）を防止
+        event.preventDefault();
+
+        // ここで特定の処理を実行
+        var page_update_No = 4;
+        socket.emit('pageupdate', page_update_No);
+      });
+      
+      socket.on('page_updatecomplete2',function(){
+              window.location.href = '/main'; // main.ejs
+      });
+
+      socket.on('page_updatecomplete3',function(){
+              window.location.href = '/account'; // account.ejs
+      });
+
+      socket.on('page_updatecomplete4',function(){
+              window.location.href = '/Question_manage'; // account.ejs
+      });
     </script>
 </body>
 </html>

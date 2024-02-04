@@ -111,7 +111,7 @@
         window.location.href = "login.ejs";
       }*/
 
-      var socket = io();
+        var socket = io();
         document.getElementById('post-question-button').addEventListener('click', function() {
             var page_update_No = 1;
             socket.emit('pageupdate',page_update_No);

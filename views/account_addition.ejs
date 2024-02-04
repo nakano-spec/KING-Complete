@@ -7,6 +7,7 @@
 </head>
 
 <body>
+  <script src='/socket.io/socket.io.js'></script>
   <h1>解答即時判断システム：ユーザーの新規追加</h1>
   <hr>
   <h2>ユーザーの新規追加</h2>
@@ -23,6 +24,18 @@
       <br>確認　　　 : <input type="password" id="confirmationText">
       <p></p>
       <br>教師権限 : <input type="checkbox" id="user_type">
+      <div id="room_select_container" style="display:none;">
+        <p>担当部屋名を選択してください。</p>
+        <select id="room_name">
+            <option value="1">PC4</option>
+            <option value="2">PC2</option>
+            <option value="3">DS</option>
+            <option value="4">PC1</option>
+            <option value="5">225</option>
+            <option value="6">226</option>  
+          <!-- 部屋名は適宜追加 -->
+        </select>
+      </div>           
     </div>
     <p></p>
     <p></p>
@@ -33,27 +46,66 @@
   </div>
 
   <script>
+    var socket = io();
+    document.getElementById('user_type').addEventListener('change', function() {
+    var roomSelectContainer = document.getElementById('room_select_container');
+    if (this.checked) {
+      roomSelectContainer.style.display = 'block'; // チェックボックスが選択されたら表示
+    } else {
+      roomSelectContainer.style.display = 'none';  // チェックボックスが選択されていなければ非表示
+    }
+    });
+
     document.getElementById("addUserButton").addEventListener("click", function() {
       // フォームから入力された値を取得
-      var user_ID = document.getElementById("user_ID").value;
-      var user_name = document.getElementById("user_name").value;
-      var password = document.getElementById("password").value;
+      var user_ID =  sanitize(document.getElementById("user_ID").value);  
+      var user_name = sanitize(document.getElementById("user_name").value);
+      var password = sanitize(document.getElementById("password").value); 
+      var passwordcheck = sanitize(document.getElementById("confirmationText").value); 
       var user_type = document.getElementById("user_type").checked ? 1 : 2; // チェックが入っていれば1、そうでなければ2
 
+      // user_typeが1の場合に選択された部屋のvalueを取得
+    　var room_name = user_type === 1 ? document.getElementById("room_name").value : null;
+      if(!user_ID){
+        alert("学籍番号が入力されていません。");
+        return
+      }else if(!user_name){
+        alert("ユーザ名が入力されていません");
+        return
+      }else if(!password){
+        alert("パスワードが入力されていません");
+        return
+      }else if(password != passwordcheck){
+        alert("確認用パスワードが違います。入力し直してください。");
+        return
+      }
       // 現在の日時と時間を取得
       var currentDate = new Date();
       var formattedDate = currentDate.toLocaleString(); // ローカルの日時を文字列に変換
 
       // テキストファイルに日時を保存
-      var textToSave = "Clicked on: " + log_time;
+      var textToSave = "Clicked on: " + formattedDate;
       var blob = new Blob([textToSave], { type: "text/plain;charset=utf-8" });
-      saveAs(blob, "click_log.txt");
+      /*saveAs(blob, "click_log.txt");*/
+      var data ={
+        userID:user_ID,
+        username:user_name,
+        password:password,
+        usertype:user_type
+      }
 
+      // user_typeが1の場合は、部屋のvalueをdataに追加
+        if(user_type === 1 && room_name !== null) {
+            data.room_name = room_name;
+        }
       // データベースへの書き込み処理を行う関数を呼び出す
-      writeToDatabase(user_ID, user_name, password, log_time, user_type);
+      socket.emit('Add_user_manually',data);
+      //writeToDatabase(user_ID, user_name, password, log_time, user_type);
     });
-
-    const mysql = require('mysql');
+    socket.on('Add_user_manually_Complete',function(){
+        window.location.href ='/account';
+    })
+    /*const mysql = require('mysql');
 
     //接続情報の設定
     const connection = mysql.createConnection({
@@ -61,29 +113,28 @@
       user: 'root',
       password: 'matosui122083',
       database: 'mysql'
-    });
+    });*/
 
-    //データベースへの接続
-    connection.connect((err) => {
-      if (err) throw err;
-      console.log('データベースに接続しました。');
-    });
-
-    function writeToDatabase(user_ID, user_name, password, log_time, user_type) {
-      const user = {user_ID: userID, user_name: user_name, password: password, log_time: log_time, user_type: user_type};
-
-      const query = connection.query('INSERT INTO user_table SET ?', user, (err, result) => {
-        if (err) throw err;
-        console.log('データが挿入されました。');
-      });
-    }
+    //サニタイズ処理
+    function sanitize(str) {
+          return String(str)
+              .replace(/&/g, '&amp;')
+              .replace(/</g, '&lt;')
+              .replace(/>/g, '&gt;')
+              .replace(/"/g, '&quot;')
+              .replace(/'/g, '&#x27;')
+              .replace(/\//g,'&#x2F;')
+              .replace(/:/g, '')  // コロンを取り除く
+              .replace(/;/g, '') // セミコロンを取り除く
+              .replace(/\*/g, ''); // アスタリスクを完全に除去
+      }
   </script>
 </body>
 <!-- <html>
 <head>
     <title>アカウント追加</title>
-    <!-- 必要なCSSやJavaScriptを追加 -->
-    <style>
+    必要なCSSやJavaScriptを追加 -->
+     <!--<style>
         /* タブのスタイル */
         .tab {
             cursor: pointer;
@@ -122,11 +173,9 @@
     <script src="/socket.io/socket.io.js"></script>
     <h1>アカウント追加</h1>
 
-    <!-- タブ -->
     <div class="tab" id="tab-csv">CSVファイル追加</div>
     <div class="tab" id="tab-manual">手入力追加</div>
 
-    <!-- CSVファイル追加コンテンツ -->
     <div class="content" id="content-csv">
         <div class="drop-area" id="drop-area">
             <p>CSVファイルをここにドラッグアンドドロップ、またはクリックしてファイルを選択</p>
@@ -134,7 +183,6 @@
         </div>
     </div>
 
-    <!-- 手入力追加コンテンツ -->
     <div class="content hidden" id="content-manual">
         <form id="manual-form">
             <div>
@@ -158,14 +206,12 @@
         </form>
     </div>
 
-    <!-- 追加完了通知 -->
     <div id="completion-notification" style="display: none;">
         <p>アカウントの追加が完了しました。</p>
         <button id="back-button">戻る</button>
     </div>
-
     <script>
-        var socket = io(); // Socket.ioのインスタンス
+        /*var socket = io(); // Socket.ioのインスタンス
         // タブの切り替え処理
         var dropArea = document.getElementById('drop-area');
         var fileInput = document.getElementById('file-input');
@@ -234,7 +280,7 @@
         // 戻るボタンの処理
         document.getElementById('back-button').addEventListener('click', function() {
             window.location.href = '/account_list'; // 指定ページへの遷移
-        });
+        });*/
     </script>
-    </body> -->
-</html>
+    </body>
+</html>-->

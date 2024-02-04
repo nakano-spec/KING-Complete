@@ -50,6 +50,8 @@ var account_editRouter = require('./routes/account_edit');
 var question_listRouter = require('./routes/question_list');
 var question_additionRouter = require('./routes/question_addition');
 var question_editRouter = require('./routes/question_edit');
+var mailaddressRouter = require('./routes/mailaddress');
+const emailRoutes = require('./routes/emailRoute');
 
 const router = require('./routes/index');
 //読み込んだexpressをapp変数に格納
@@ -173,6 +175,8 @@ app.use('/account_edit',account_editRouter);
 app.use('/question_list',question_listRouter);
 app.use('/question_addition',question_additionRouter);
 app.use('/question_edit',question_editRouter);
+app.use('/mailaddress',mailaddressRouter);
+app.use('/api', emailRoutes);
 
 const helmet = require('helmet');
 app.use(helmet());

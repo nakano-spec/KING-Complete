@@ -15,11 +15,11 @@
     <div id="data"></div>
     <div id="form">
         <div id="text">
-            ユーザー名：<input type="text" id="nameText">
+            ユーザー名：<input type="text" id="nameText" value="<%= user_name %>">
             <p></p>
-            <br>学籍番号　 : <input type="text" id="studentNumberText">
+            <br>学籍番号　 : <input type="text" id="studentNumberText" value="<%= user_ID %>">
             <p></p>
-            <br>パスワード : <input type="text" id="passwordText">
+            <br>パスワード : <input type="text" id="passwordText" value="<%= password %>">
             <p></p>
             <br>確認　　　 : <input type="text" id="confirmationText">
             <p></p>
@@ -35,6 +35,7 @@
 
     <script>
         // URLからクエリパラメータを取得する関数
+        /*
         function getQueryParam(name) {
             const urlParams = new URLSearchParams(window.location.search);
             return urlParams.get(name);
@@ -64,7 +65,7 @@
 
             // ここで取得した情報をデータベースなどに送信して更新処理を行う
             // この部分はサーバーサイドの処理が必要です
-        }
+        }*/
     </script>
 
 </body>

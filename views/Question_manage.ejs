@@ -3,7 +3,7 @@
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>問題管理システム</title>
+        <title>問題管理ページ</title>
         <link href="/stylesheets/Question_manage.css" rel="stylesheet">
         <style>
             /* ここにスタイルを記述 */
@@ -11,35 +11,153 @@
     </head>
 
 <body>
+<script src="/socket.io/socket.io.js"></script>
 
 <div class="header">
     <h1>問題管理システム</h1>
 </div>
 
-<form action="/Question_manage/delete" method="post">
+
     <div>
-        <button class="button">新規作成</button>
-        <button type="submit" class="button">選択した問題の削除</button>
-        <button class="button">選択した問題の編集</button>
-        <input type="text" placeholder="検索..." class="search-box">
-        <button class="search-button">🔎</button>
-    </div>    
+        <button id="add-button" class="button">新規作成</button>
+        <button id="delete-button" type="submit" class="button">選択した問題の削除</button>
+        <button  id="edit-button" class="button">選択した問題の編集</button>
+        <input type="text" id="search-box" placeholder="検索..." class="search-box">
+        <button id="search-button" class="search-button">🔎</button>
+    </div> 
+    <form id="select-form">   
     <table>
         <tr>
             <th>選択</th>
+            <th>資格名</th>
+            <th>ジャンル</th>
+            <th>年度</th>
             <th>問題名</th>
             <th>問題文</th>
+            <th>選択肢1</th>
+            <th>選択肢2</th>
+            <th>選択肢3</th>
+            <th>選択肢4</th>
+            <th>写真名</th>
+            <th>回答形式</th>
         </tr>
-        <% questions.forEach(function(question) { %>
+        <% questions.forEach(function(question,index) { %>
             <tr>
-                <td><input type="checkbox" name="selectedQuestions" value="<%= question.question_name %>"></td>
-                <td><%= question.question_name %></td>
-                <td><%= question.question_text %></td>
+                <td> <input type="radio" name="select" value="<%= question.user_ID %>" 
+                    data-qualification_name="<%= question.qualification_name %>" 
+                    data-question_genre="<%= question.question_genre %>"
+                    data-question_years="<%= question.question_years %>"
+                    data-question_years="<%= question.question_name %>"
+                    data-question_text="<%= question.question_text %>"
+                    data-select_1="<%= question.select_1 %>"
+                    data-select_2="<%= question.select_2 %>"
+                    data-select_3="<%= question.select_3 %>"
+                    data-select_4="<%= question.select_4 %>"
+                    data-pics_name="<%= question.pics_name %>"
+                    data-type_name="<%= question.type_name %>"></td>
+                <td class="ellipsis" onclick="toggleText(this)"><%= question.qualification_name %></td>
+                <td class="ellipsis" onclick="toggleText(this)"><%= question.question_genre %></td>
+                <td class="ellipsis" onclick="toggleText(this)"><%= question.question_years %></td>
+                <td class="ellipsis" onclick="toggleText(this)"><%= question.question_name %></td> 
+                <td class="ellipsis" onclick="toggleText(this)"><%= question.question_text %></td> 
+                <td class="ellipsis" onclick="toggleText(this)"><%= question.select_1 %></td> 
+                <td class="ellipsis" onclick="toggleText(this)"><%= question.select_2 %></td> 
+                <td class="ellipsis" onclick="toggleText(this)"><%= question.select_3 %></td> 
+                <td class="ellipsis" onclick="toggleText(this)"><%= question.select_4 %></td> 
+                <td class="ellipsis" onclick="toggleText(this)"><%= question.pics_name %></td>
+                <td class="ellipsis" onclick="toggleText(this)"><%= question.type_name %></td> 
             </tr>
         <% }); %>
     </table>
 </form>
 
-<a href="http://localhost:3000/mondai?name=sensei">問題出題</a>
+<a href="/mondai">問題出題</a>
+<script>
+    var socket = io();
+    document.getElementById('select-form').addEventListener('submit', function(event) {
+        event.preventDefault(); // フォームのデフォルトの送信を防止
+        window.location.href='/main?name=teacher'
+    });
+
+    document.getElementById('add-button').addEventListener('click', function() {
+        window.location.href='/account_addition'
+    });
+
+    document.getElementById('edit-button').addEventListener('click', function() {
+        var selectedRadio = document.querySelector('input[name="select"]:checked');
+        if (selectedRadio) {
+            var selectedData = {
+                userID: selectedRadio.getAttribute('data-user-id'),
+                userName: selectedRadio.getAttribute('data-user-name'),
+                password: selectedRadio.getAttribute('data-password'),
+                logTime: selectedRadio.getAttribute('data-log-time')
+            };
+            var queryParams = 'userID=' + encodeURIComponent(selectedData.userID) +
+              '&userName=' + encodeURIComponent(selectedData.userName) +
+              '&password=' + encodeURIComponent(selectedData.password);
+            window.location.href='/account_edit?' + queryParams;
+        } else {
+            alert('ユーザーを選択してください。');
+        }
+    });
+
+    // 削除ボタンのイベントリスナー
+    document.getElementById('delete-button').addEventListener('click', function() {
+        var selectedRadio = document.querySelector('input[name="select"]:checked');
+        if (selectedRadio) {
+            var user_ID = selectedRadio.getAttribute('data-user-id')
+            socket.emit('account_delete',user_ID);
+        } else {
+            alert('ユーザーを選択してください。');
+        }
+    });
+
+    socket.on('delete_complete',function(){
+        window.location.href='/account_list';
+    })
+
+    document.getElementById('search-button').addEventListener('click', function() {
+        var searchTerm = document.getElementById('search-box').value;
+        socket.emit('search_accounts', searchTerm);
+    });
+
+    socket.on('search_results', function(results) {
+        updateTable(results);
+    });
+
+    function updateTable(data) {
+        var tbody = document.querySelector('#select-form tbody');
+        tbody.innerHTML = ''; // テーブルの現在の内容をクリア
+
+        // 新しい行をテーブルに追加
+        data.forEach(function(question, index) {
+            var tr = document.createElement('tr');
+
+            tr.innerHTML = `
+                <td><input type="radio" name="select" value="${question.user_ID}" 
+                    data-user-id="${question.user_ID}" 
+                    data-user-name="${question.user_name}"
+                    data-password="${question.password}"
+                    data-log-time="${question.log_time}"></td>
+                <td>${question.user_ID}</td>
+                <td>${question.user_name}</td>
+                <td>${question.password}</td>
+                <td>${new Date(question.log_time).toLocaleString('ja-JP')}</td>`;
+
+            tbody.appendChild(tr);
+        });
+    }
+    
+    function toggleText(element) {
+        // 現在のクラスをチェック
+        if (element.classList.contains('ellipsis')) {
+            // ellipsisクラスを削除して全文を表示
+            element.classList.remove('ellipsis');
+        } else {
+            // ellipsisクラスを追加してテキストを省略
+            element.classList.add('ellipsis');
+        }
+    }
+</script>
 </body>
 </html>

@@ -39,9 +39,12 @@
                   </div> 
                   <br>
                   <select name = "select1" required style = "width: 30%;height: 50px;font-size: 20px;text-align: center;padding: 10px;position: relative;top: 10px;">
-                    <% data.forEach((list) => { %>
-                      <option><%= list.user_name %></option>
-                    <% }) %>
+                    <option value="1">PC4</option>
+                    <option value="2">PC2</option>
+                    <option value="3">DS</option>
+                    <option value="4">PC1</option>
+                    <option value="5">225</option>
+                    <option value="6">226</option>                    
                   </select>
                   <br>
                   <br>
@@ -49,8 +52,9 @@
             </form>
         </table>
     </div>
+    <br>
     <div class="container">
-    <ul id="mondai"></ul><!--socketでメッセ表示するところ-->
+    <ul id="mondai"></ul>
     </div>
     <script>
       //socket.ioを読み込む。

@@ -4,23 +4,16 @@ const async = require('async');
 
 /* GET users listing. */
 router.get('/', function(req, res, next) {
-  if(!req.session.user || req.session.page !== 2 || req.session.Before_page !== 1){
-    var select1 = "select u.user_name from room_table r, user_table u where r.user_ID = u.user_ID;"
-    async.waterfall([
-      function(callback){
-          pool.getConnection(function(err,connection){
-            connection.query(select1,(err,result,fields)=>{
-              if(err){
-                console.log(err);
-              }
-              callback(null,result);
-            })
-          });
-      }
-      ],
-      function(err,results){
-        res.render('login.ejs',{data:results});
-      }); 
+  //app.jsの読み込み
+  var app = req.app;
+  //
+
+  //データベース情報を読み込み
+  var poolCluster = app.get("pool");
+  var pool = poolCluster.of('MASTER')
+  //
+  if(!req.session.student || req.studentsession.page !== 103 || req.studentsession.Before_page !== 102){
+        res.render('login.ejs');
   }else{
     var name1 = req.query.name;
     var data ={
