@@ -52,6 +52,8 @@ var question_additionRouter = require('./routes/question_addition');
 var question_editRouter = require('./routes/question_edit');
 var mailaddressRouter = require('./routes/mailaddress');
 const emailRoutes = require('./routes/emailRoute');
+var question_additionMethodRouter = require('./routes/question_additionMethod');
+var question_additionmanualRouter = require('./routes/question_additionmanual');
 
 const router = require('./routes/index');
 //読み込んだexpressをapp変数に格納
@@ -177,6 +179,8 @@ app.use('/question_addition',question_additionRouter);
 app.use('/question_edit',question_editRouter);
 app.use('/mailaddress',mailaddressRouter);
 app.use('/api', emailRoutes);
+app.use('/question_select', question_additionMethodRouter);
+app.use('/question_additionmanual', question_additionmanualRouter);
 
 const helmet = require('helmet');
 app.use(helmet());

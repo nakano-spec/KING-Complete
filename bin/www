@@ -1535,5 +1535,90 @@
           })
         })
       });
+
+      socket.on('search_question', function(data) {
+        var pool = poolCluster.of('MASTER');
+        var data = sanitizeHtml(data);
+        const query = '%' + data + '%';
+        //var sql = 'select user_ID,user_name,log_time from user_table where user_ID LIKE ? OR user_name LIKE ? OR password LIKE ? OR log_time LIKE ?;';
+        var sql2 = 'select g.qualification_name, g.question_genre, g.question_years, q.question_name, q.question_text, COALESCE(s.select_1, \'\') AS select_1, COALESCE(s.select_2, \'\') AS select_2, COALESCE(s.select_3, \'\') AS select_3, COALESCE(s.select_4, \'\') AS select_4, a.type_name, CASE WHEN q.picture_flag = 0 THEN \'\' ELSE p.pics_name END AS pics_name FROM question_table q LEFT JOIN select_table s ON q.question_ID = s.question_ID LEFT JOIN pics_table p ON q.question_ID = p.question_ID JOIN answer_type a ON q.type_ID = a.type_ID JOIN genre_table g ON q.question_ID = g.question_ID WHERE g.qualification_name LIKE ? OR g.question_genre LIKE ? OR g.question_years LIKE ? OR q.question_name LIKE ? OR q.question_text LIKE ? OR a.type_name LIKE ?;';
+        pool.getConnection(function(err,connection){
+          connection.query(sql2,[query,query,query,query,query,query],(err,search_result,field)=>{
+            if(err){
+              console.log(err);
+            }
+            socket.emit('questionsearchResult',search_result);
+          })
+        })
+      });
+
+      socket.on('question_delete',(question_name) =>{
+        var pool = poolCluster.of('MASTER');
+        pool.getConnection(function(err,connection){
+          if(err){
+            console.log(err)
+          }
+          async.waterfall([
+            function(callback) {
+                // ① question_nameを使ってSQLでquestion_tableからquestion_IDを取得
+                const query1 = "SELECT question_ID FROM question_table WHERE question_name = ?";
+                connection.query(query1, [question_name], function(err, result) {
+                    if (err) return callback(err);
+                    if (result.length === 0) return callback(new Error("Question not found"));
+                    const question_ID = result[0].question_ID;
+                    callback(null, question_ID);
+                });
+            },
+            function(question_ID, callback) {
+                // ② question_IDを使用してpics_tableからデータ削除
+                const query2 = "DELETE FROM pics_table WHERE question_ID = ?";
+                connection.query(query2, [question_ID], function(err) {
+                    if (err) return callback(err);
+                    callback(null, question_ID);
+                });
+            },
+            function(question_ID, callback) {
+                // ③ question_IDを使用してjudge_tableからデータ削除
+                const query3 = "DELETE FROM judge_table WHERE question_ID = ?";
+                connection.query(query3, [question_ID], function(err) {
+                    if (err) return callback(err);
+                    callback(null, question_ID);
+                });
+            },
+            function(question_ID, callback) {
+                // ④ question_IDを使用してquestion_logからデータ削除
+                const query4 = "DELETE FROM question_log WHERE question_ID = ?";
+                connection.query(query4, [question_ID], function(err) {
+                    if (err) return callback(err);
+                    callback(null, question_ID);
+                });
+            },
+            function(question_ID, callback) {
+                // ⑤ question_IDを使用してgenre_tableからデータ削除
+                const query5 = "DELETE FROM genre_table WHERE question_ID = ?";
+                connection.query(query5, [question_ID], function(err) {
+                    if (err) return callback(err);
+                    callback(null, question_ID);
+                });
+            },
+            function(question_ID, callback) {
+                // ⑥ question_IDを使用してquestion_tableからデータ削除
+                const query6 = "DELETE FROM question_table WHERE question_ID = ?";
+                connection.query(query6, [question_ID], function(err) {
+                    if (err) return callback(err);
+                    callback(null, question_ID);
+                });
+            }
+        ], function(err, question_ID) {
+            if (err) {
+                // エラーがあった場合、クライアントにエラーメッセージを送信
+                socket.emit('error', err.message);
+            } else {
+                // 全ての操作が成功した場合、クライアントに完了メッセージを送信
+                socket.emit('question_Complete');
+            }
+        });
+        })
+     })
    });
 
