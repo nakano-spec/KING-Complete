@@ -249,204 +249,7 @@
     })  
     })
     
-   //myoujin
-   /* socket.on('montuika',(array)=>{
-     var q1 = "insert into mondai_LIST values(?,?,?,?,?,?,?,?,?,?,?);"
-     var q2 = "select MIN(mon_ID  + 1) AS mon_ID from mondai_LIST where (mon_ID + 1) NOT IN (SELECT mon_ID from mondai_LIST);"
-     var q3 = "select MIN(seikai_ID  + 1) AS seikai_ID from seikai_LIST where (seikai_ID + 1) NOT IN (SELECT seikai_ID from seikai_LIST);"
-     var q4 = "insert into seikai_LIST values(?,?,?);"
-     var da = "a";
-     console.log(array);
-     var moni = 0;
-     var name = array[0];
-     var mondaibun = array[1];
-     var sen1 = array[2];
-     var sen2 = array[3];
-     var sen3 = array[4];
-     var sen4 = array[5];
-     var seikai = array[6];
-     var seiID = 0;
-     var kaiID = 0;
-     if(sen1 == "なし"){
-       sen1 = "";
-       sen2 = "";
-       sen3 = "";
-       sen4 = "";
-       kaiID = 1;
-     }
-     if(array[7] != "なし"){
-       var picture = array[7];
-     }else{
-       var picture = "";
-     }
-     connection.query(q2,(err,res,field)=>{
-       if(err){
-         console.log(err);
-       }
-       moni = res[0].mon_ID;
-       connection.query(q3,(err,res2,field)=>{
-         if(err){
-           console.log(err);
-         }
-         seiID = res2[0].seikai_ID;
-         connection.query(q4,[seiID,moni,seikai],(err,res3,field)=>{
-           if(err){
-             console.log(err);
-           }
-           connection.query(q1,[moni,name,mondaibun,sen1,sen2,sen3,sen4,seiID,0,picture,kaiID],(err,res4,field)=>{
-             if(err){
-               console.log(err);
-             }
-             connection.commit((err) =>{
-               if(err){connection.rollback(() =>{throw console.log('error');});};
-               io.emit('kanryou');
-             })  
-           })
-         })
-       })
-     })
-   })
    
-    socket.on('syokika',()=>{
-       var sql1="truncate table time_LIST;"
-       var sql2="truncate table kaitou_LIST;"
-       var sql3="update mondai_LIST set sentaku= 0 where sentaku = 1"
-       var sql4 = "truncate table monhan_LIST";
-       connection.query(sql1,(err,result1,fields)=>{
-        if(err){
-          console.log(err);
-        }
-        connection.query(sql2,(err,result2,fields)=>{
-          if(err){
-            console.log(err);
-          }
-          connection.query(sql3,(err,results2,fields)=>{
-            if(err){
-              console.log(err);
-            }
-            connection.query(sql4,(err,result4,fields)=>{
-              if(err){
-                console.log(err);
-              }
-              io.emit('modoru');
-            })
-          })
-        })
-       })
-    })
-  
-    socket.on('hyou',(c) =>{
-        io.emit('hyouji',c);
-      })
-  
-    socket.on('kekkahyouji',()=>{
-        io.emit('kekkahyouji2');
-    })
-    // login
-    socket.on('login_btnclick', (login_name,login_pass1) => {
-          
-          if(login_pass1 != '') {
-            var login_select1 = "select username from users where username = ?;"
-            var login_select2 = "select password from users where password = ?;"
-            var login_select3 = "select password from users where username = ?;"
-            var login_select4 = "select user_ID from users where username = ?;"
-            connection.query(login_select1,login_name,(err, login_result1, fields) => {
-              if(err){
-                console.log(err);
-                var new_flug = 0;
-                io.emit('new_flug',new_flug);
-              }
-              connection.query(login_select2,login_pass1,(err, login_result2, fields) => {
-                if(err){
-                  console.log(err);
-                  var new_flug = 0;
-                  io.emit('new_flug',new_flug);
-                }
-                if(login_result1.length >= 1 && login_result2.length >= 1) {
-                  connection.query(login_select3,login_name,(err, login_result3, fields) => {
-                    if(login_result3[0].password == login_pass1) {
-                      if(err){
-                        console.log(err);
-                        var new_flug = 0;
-                        io.emit('new_flug',new_flug);
-                      }
-                      connection.query(login_select4,login_name,(err,login_result4,fields) =>{
-                        if(err){
-                          console.log(err);
-                          var new_flug = 0;
-                          io.to(token).emit('new_flug',new_flug);
-                        }
-  
-                        if(login_result4[0].user_ID < 100)
-                        {
-                          var login_flug = 1;
-                          io.to(socket.id).emit('login_flug',login_flug,login_name);
-                        }else if(login_result4[0].user_ID > 100 && login_result4[0].user_ID < 9999)
-                        {
-                          var login_flug = 1;
-                          io.to(socket.id).emit('login_flug1',login_flug,login_name);
-                        }else if(login_result4[0].user_ID > 10000)
-                        {
-                          var login_flug = 1;
-                          io.to(socket.id).emit('login_flug2',login_flug,login_name);
-                        }
-                      })
-                    }else{
-                      var new_flug=0;
-                      io.to(socket.id).emit('new_flug',new_flug);
-                    }
-                  })
-                }
-              })
-          })
-        }
-      })
-  
-          socket.on('owa2',() =>{
-            io.emit('owari');
-          })
-  
-      socket.on('mondai_btnclick',(mondai,o) => {
-      
-        if(mondai != ''){
-          var pool = poolCluster.of('MASTER');
-          var mondai_select = "select mon_ID,mondaibun from mondai_LIST where sentaku = 1;"
-          let mondai_sentaku = "update mondai_LIST set sentaku = '1' where name = ?;"
-          let sql3 = "insert into monhan_LIST values(?,?);"
-          let sql4 = "select han_ID from hankeisiki_LIST where han_keisiki = ?;"
-          pool.getConnection(function(err,connection){
-            if(err != null){
-              console.log(err);
-              return;
-            }
-            connection.query(mondai_sentaku,mondai,(err,mondai_result,fields) =>{
-              console.log(err);
-              connection.query(mondai_select,(err,mondai_result2,fields)=>{
-                if(err){
-                var flag = 0;
-                io.emit('mondai_kekka',flag);
-              }
-              connection.commit((err) =>{
-                if(err){connection.rollback(() =>{throw console.log('error');});}
-              })
-              var ID = mondai_result2[0].mon_ID;
-              connection.query(sql4,o,(err,result,fields) =>{
-                if(err){
-                  console.log(err);
-                }
-                var han1 = result[0].han_ID;
-                connection.query(sql3,[ID,han1],(err,result,fields)=>{
-                  if(err){
-                    console.log(err);
-                  }
-                })
-              })
-              var flag = 1;
-              io.emit('mondai_kekka',flag);
-              })
-            })
-          })*/
-
     socket.on('kekkasyusei',(set1)=>{
       var userID = socket.request.session.user.username;
       var sql = "update answer_table set result = ? where user_ID =?;"
@@ -1517,6 +1320,7 @@
           
           connection.query(insertQuery, [values], function(err, result) {
             if (err) throw err;
+            connection.release();
             socket.emit('file_upload_Complete');
           });
         });
@@ -1531,6 +1335,7 @@
             if(err){
               console.log(result);
             }
+            connection.release();
             socket.emit('searchResult',search_result);
           })
         })
@@ -1547,6 +1352,7 @@
             if(err){
               console.log(err);
             }
+            connection.release();
             socket.emit('questionsearchResult',search_result);
           })
         })
@@ -1612,9 +1418,11 @@
         ], function(err, question_ID) {
             if (err) {
                 // エラーがあった場合、クライアントにエラーメッセージを送信
+                connection.release();
                 socket.emit('error', err.message);
             } else {
                 // 全ての操作が成功した場合、クライアントに完了メッセージを送信
+                connection.release();
                 socket.emit('question_Complete');
             }
         });

@@ -11,6 +11,8 @@ router.get('/', function(req, res, next) {
   const poolCluster = app.get('pool');
   var pool = poolCluster.of('MASTER');
   if(req.session.user || req.session.page === 4 || req.session.Before_page === 3){
+    req.session.page = 4;
+    req.session.Before_page = 3;
     pool.getConnection(function(err,connection){
       if(err != null){
         console.log(err);

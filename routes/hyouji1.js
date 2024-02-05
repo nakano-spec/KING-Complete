@@ -6,7 +6,7 @@ router.get('/', function(req, res, next) {
   var app = req.app;
   var poolCluster = app.get('pool');
   var pool = poolCluster.of('MASTER');
-  if(!req.session.user || req.session.page !== 4 || req.session.Before_page !== 3){
+  if(!req.session.user){
         res.render('login.ejs');
   }else{
     req.session.user.page = 12;

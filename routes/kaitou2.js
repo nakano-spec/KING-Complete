@@ -37,20 +37,19 @@ if(!req.session.student || req.session.studentpage !== 102 || req.session.studen
             async.waterfall([
                   function(callback){
                         var sql2 = "select question_ID from question_log where room_ID = ? and question_status = 1;";
-                        connection.query(sql2,req.session.studentroom_ID,(err,result2,fields)=>{
+                        connection.query(sql2,[req.session.studentroom_ID],(err,result2,fields)=>{
                               if(err){
                                     console.log(err);
                               }
-                              callback(null,req.session);
+                              callback(null,result2[0].question_ID);
                         })
                   },
                   function(question_ID,callback){
                         var sql3 = "select a.type_name from answer_type a,question_table q where a.type_ID = q.type_ID and q.question_ID = ?;";
-                        connection.query(sql3,question_ID,(err,result3,fields)=>{
+                        connection.query(sql3,[question_ID],(err,result3,fields)=>{
                               if(err){
                                     console.log(err);
                               }
-                              console.log(result3[0].type_name);
                               callback(null,result3[0].type_name,question_ID);
                         })
                   },
